@@ -9,8 +9,6 @@ from tap_klaviyo.utils import get_incremental_pull, get_full_pulls, get_all_usin
 
 LOGGER = singer.get_logger()
 
-API_VERSION = "2024-02-15"
-
 # For stream global_exclusions, data related to suppressed users can be found in the /api/profiles endpoint
 ENDPOINTS = {
     'global_exclusions': 'https://a.klaviyo.com/api/profiles',
@@ -82,7 +80,7 @@ class Stream(object):
         }
 
 CREDENTIALS_KEYS = ["api_key"]
-REQUIRED_CONFIG_KEYS = ["start_date"] + CREDENTIALS_KEYS
+REQUIRED_CONFIG_KEYS = ["start_date"] + CREDENTIALS_KEYS + ['revision']
 
 GLOBAL_EXCLUSIONS = Stream(
     'global_exclusions',
@@ -132,6 +130,7 @@ def load_shared_schema_refs():
 
 def do_sync(config, state, catalog, headers):
     start_date = config['start_date'] if 'start_date' in config else None
+    
 
     stream_ids_to_sync = set()
 
@@ -190,7 +189,7 @@ def main():
     args = singer.utils.parse_args(REQUIRED_CONFIG_KEYS)
     headers = {
         "Authorization": f"Klaviyo-API-Key {args.config.get('api_key')}",
-        "revision": API_VERSION
+        "revision": args.config.get('revision')
     }
 
     if args.discover:
